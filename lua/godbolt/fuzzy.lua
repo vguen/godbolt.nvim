@@ -92,7 +92,7 @@ local function fzy(entries, begin, _end, options, exec, reuse_3f)
   end
   return (require("fzy")).pick_one(entries, "Choose compiler: ", _10_, _11_)
 end
-local function fuzzy(picker, ft, begin, _end, options, exec, reuse_3f)
+local function fuzzy(picker, instance_address, ft, begin, _end, options, exec, reuse_3f)
   local ft0
   do
     local _13_ = ft
@@ -105,7 +105,7 @@ local function fuzzy(picker, ft, begin, _end, options, exec, reuse_3f)
       ft0 = nil
     end
   end
-  local cmd = string.format("curl https://godbolt.org/api/compilers/%s", ft0)
+  local cmd = string.format("curl %s/api/compilers/%s", instance_address, ft0)
   local output = {}
   local function _15_(_, data, _0)
     return vim.list_extend(output, data)

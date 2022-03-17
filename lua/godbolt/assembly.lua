@@ -11,6 +11,8 @@ local function prepare_buf(text, name, reuse_3f, source_buf)
   local buf
   if (reuse_3f and (type(map[source_buf]) == "table")) then
     buf = table.maxn(map[source_buf])
+    api.nvim_buf_set_option(buf, "modifiable", true)
+    api.nvim_buf_set_option(buf, "readonly", false)
   else
     buf = api.nvim_create_buf(false, true)
   end
@@ -124,6 +126,11 @@ local function display(response, begin, name, reuse_3f)
     end
     api.nvim_set_current_win(asm_winid)
     api.nvim_win_set_buf(asm_winid, asm_buf)
+
+    -- This is done in the asm_buffer
+    vim.bo.readonly = true
+    vim.bo.modifiable = false
+
     wo_set(asm_winid, "number", false)
     wo_set(asm_winid, "relativenumber", false)
     wo_set(asm_winid, "spell", false)

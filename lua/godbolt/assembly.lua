@@ -79,9 +79,12 @@ local function display(response, begin, name, reuse_3f)
   do
     local str = ""
     for k, v in pairs(response.asm) do
+      -- TODO: remove to many things (ie: the main lable) should it be handle here or should it be in asm-parser ?
+      -- if type(v.source) == "table" and v.text then
       if v.text then
         str = (str .. "\n" .. v.text)
       else
+        -- TODO: remove this it is useless
         str = str
       end
     end

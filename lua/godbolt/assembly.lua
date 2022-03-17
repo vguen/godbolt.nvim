@@ -15,6 +15,9 @@ local function prepare_buf(text, name, reuse_3f, source_buf)
     api.nvim_buf_set_option(buf, "readonly", false)
   else
     buf = api.nvim_create_buf(false, true)
+    api.nvim_buf_set_option(buf, "buftype", "nofile")
+    api.nvim_buf_set_option(buf, "bufhidden", "delete")
+    api.nvim_buf_set_option(buf, "swapfile", false)
   end
   api.nvim_buf_set_option(buf, "filetype", "asm")
   api.nvim_buf_set_lines(buf, 0, -1, true, vim.split(text, "\n", {trimempty = true}))

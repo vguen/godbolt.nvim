@@ -92,9 +92,13 @@ local function display(response, begin, name, reuse_3f)
   end
   local source_winid = fun.win_getid()
   local source_buf = fun.bufnr()
-  -- TODO: fix this
-  -- local qflist = make_qflist(response.stderr, source_buf)
   local asm_buf = prepare_buf(asm, name, reuse_3f, source_buf)
+
+  -- TODO: properly handle quickfix windows
+  local qflist = nil
+  if response.stderr then
+    qflist = make_qflist(response.stderr, source_buf)
+  end
   local quickfix_cfg = (require("godbolt")).config.quickfix
   local qf_winid = nil
   if (qflist and quickfix_cfg.enable) then
@@ -106,6 +110,7 @@ local function display(response, begin, name, reuse_3f)
     end
   else
   end
+
   if ("<Compilation failed>" == response.asm[1].text) then
     return vim.notify("godbolt.nvim: Compilation failed")
   else
@@ -123,11 +128,14 @@ local function display(response, begin, name, reuse_3f)
     wo_set(asm_winid, "relativenumber", false)
     wo_set(asm_winid, "spell", false)
     wo_set(asm_winid, "cursorline", false)
+
+    -- TODO: here also properly handle quickfix
     if qf_winid then
       api.nvim_set_current_win(qf_winid)
     else
       api.nvim_set_current_win(source_winid)
     end
+
     if not map[source_buf] then
       map[source_buf] = {}
     else

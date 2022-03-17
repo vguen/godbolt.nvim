@@ -136,6 +136,12 @@ local function display(response, begin, name, reuse_3f)
     wo_set(asm_winid, "spell", false)
     wo_set(asm_winid, "cursorline", false)
 
+    wo_set(asm_winid, "cursorbind", true)
+    wo_set(asm_winid, "scrollbind", true)
+
+    wo_set(source_winid, "cursorbind", true)
+    wo_set(source_winid, "scrollbind", true)
+
     -- TODO: here also properly handle quickfix
     if qf_winid then
       api.nvim_set_current_win(qf_winid)

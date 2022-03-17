@@ -5,7 +5,6 @@ local fun = vim.fn
 local fmt = string.format
 local term_escapes = "[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]"
 local wo_set = api.nvim_win_set_option
-local config = (require("godbolt")).config
 local map = nil
 local nsid = nil
 local function prepare_buf(text, name, reuse_3f, source_buf)

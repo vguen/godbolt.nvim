@@ -4,15 +4,63 @@ local fun = vim.fn
 local api = vim.api
 local fmt = string.format
 
-M.config = {instance_address = "https://godbolt.org", asm_syntax = "intel", asm_parser = { objdump = "objdump", objdump_options = "-d -l", asm_parser = "/home/RATIONAL_LL/guennouv/Documents/asm-parser/build/bin/asm-parser", asm_parser_options = "-stdin -binary -libray_functions -plt -unused_labels -directives" }, cpp = {compiler = "g112", options = {}}, c = {compiler = "cg112", options = {}}, rust = {compiler = "r1560", options = {}}, quickfix = {enable = false, auto_open = false}}
+M.config = {
+  quickfix = {enable = false, auto_open = false},
+  colorscheme = "rainbow",
+  colormap = {
+    rainbow = {
+      "#d7f0eb",
+      "#ffffe4",
+      "#e8e7fe",
+      "#fed3ce",
+      "#d3e4f0",
+      "#fee5c8",
+      "#e4f4ca",
+      "#feeef6",
+      "#f2f2f2",
+      "#e8d3e8",
+      "#edf8eb",
+      "#fff9cd",
+    },
+  },
+  -- output {
+  asm_syntax = "intel", -- at
+  demangle_identifier = "",
+  -- compile_binary? Do we want it ? or is it our default asm_parser backend ?
+  -- execute_code? Do we want it ?
+  -- },
+  filters = {
+    unused_labels     = true,
+    library_functions = true,
+    directives        = true,
+    comments          = true,
+    -- horizontal_whitespaces = false
+  },
+  backend = "",
+  backends = {
+    compiler_explorer = {
+      instance_address = "https://godbolt.org",
+      cpp   = { compiler = "g112",  options = {} },
+      c     = { compiler = "cg112", options = {} },
+      rust  = { compiler = "r1560", options = {} }
+    },
+    asm_parser = {
+      objdump = "objdump",
+      objdump_options = "-d -l -j .text -j .rodata",
+      asm_parser = "/home/RATIONAL_LL/guennouv/Documents/asm-parser/build/bin/asm-parser",
+      asm_parser_options = "-stdin -binary -libray_functions -plt -unused_labels -directives"
+    }
+  }
+}
 
 local function build_asm_parser_cmd()
   -- TODO: example of objdump path to find
   -- /opt/rational-os/x86-64/2.2.0/toolchain/sysroots/x86_64-rationalsdk-linux/usr/bin/objdump
   -- TODO: need to find the current object file associated with buffer
   local obj_file = "/home/RATIONAL_LL/guennouv/test.o"
-  local objdump_opt_with_asm = M.config.asm_parser.objdump_options .. " -M " .. M.config.asm_syntax
-  return string.format(("%s %s %s | %s %s"), M.config.asm_parser.objdump, objdump_opt_with_asm, obj_file, M.config.asm_parser.asm_parser, M.config.asm_parser.asm_parser_options)
+  local asm_parser = M.config.backends.asm_parser
+  local objdump_opt_with_asm = asm_parser.objdump_options .. " -M " .. M.config.asm_syntax
+  return string.format(("%s %s %s | %s %s"), asm_parser.objdump, objdump_opt_with_asm, obj_file, asm_parser.asm_parser, asm_parser.asm_parser_options)
 end
 
 M.build_cmd = function(compiler, text, options, exec_asm_3f)
@@ -28,21 +76,22 @@ M.godbolt = function(begin, _end, backend, reuse_3f, compiler)
   local execute = (require("godbolt.execute")).execute
   local fuzzy = (require("godbolt.fuzzy")).fuzzy
 
-  local ft = vim.bo.filetype
-  if ft == "" then
-    api.nvim_err_writeln("filetype is not set")
-    return nil
-  end
-  if M.config[ft] == nil then
-    api.nvim_err_writeln("There is no config for filetype: " .. ft)
-    return nil
-  end
-
   if backend == "compiler-explorer" then
-    local compiler0 = (compiler or M.config[ft].compiler)
+    local ft = vim.bo.filetype
+    if ft == "" then
+      api.nvim_err_writeln("filetype is not set")
+      return nil
+    end
+    local compiler_explorer = M.config.backends.compiler_explorer
+    if compiler_explorer[ft] == nil then
+      api.nvim_err_writeln("There is no config for filetype: " .. ft)
+      return nil
+    end
+
+    local compiler0 = (compiler or compiler_explorer[ft].compiler)
     local options
-    if M.config[ft] then
-      options = vim.deepcopy(M.config[ft].options)
+    if compiler_explorer[ft] then
+      options = vim.deepcopy(compiler_explorer[ft].options)
     else
       options = {}
     end
@@ -82,11 +131,11 @@ M.godbolt = function(begin, _end, backend, reuse_3f, compiler)
     end
     local function curryed_display(_0, _1, _2)
       s = table.concat(output, ", ")
-      print(s)
+      -- print(s)
       return display(vim.json.decode(s), begin, bufname, reuse_3f)
     end
     local cmd = build_asm_parser_cmd()
-    print(cmd)
+    -- print(cmd)
     fun.jobstart(cmd, {on_stdout = _15_, on_exit = curryed_display, stdout_buffered = true})
     -- TODO: execute asm-parser request
     -- check if there is a `main` symbol (how to handle if there is not ?)
@@ -102,14 +151,15 @@ M.godbolt = function(begin, _end, backend, reuse_3f, compiler)
 end
 
 M.setup = function(user_opts)
-  print("before [" .. table.concat(user_opts, ", ") .. "]")
-  print("before [" .. table.concat(M.config, ", ") .. "]")
-  print("============================================================")
+  require("godbolt.assembly").init()
+  -- print("before [" .. table.concat(user_opts, ", ") .. "]")
+  -- print("before [" .. table.concat(M.config, ", ") .. "]")
+  -- print("============================================================")
   -- TODO: can I use this instead ? how other fnl plugin do that ?
   M.config = vim.tbl_extend("force", M.config, user_opts or {})
-  print("after  [" .. table.concat(user_opts, ", ") .. "]")
-  print("after  [" .. table.concat(M.config, ", ") .. "]")
-  print("============================================================")
+  -- print("after  [" .. table.concat(user_opts, ", ") .. "]")
+  -- print("after  [" .. table.concat(M.config, ", ") .. "]")
+  -- print("============================================================")
   -- local _4_
   -- do
   --   do end (require("godbolt.assembly")).init()

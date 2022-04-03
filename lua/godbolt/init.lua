@@ -53,10 +53,11 @@ M.config = {
   }
 }
 
-local function build_asm_parser_cmd()
+local function build_asm_parser_cmd(source_buf)
   -- TODO: example of objdump path to find
   -- /opt/rational-os/x86-64/2.2.0/toolchain/sysroots/x86_64-rationalsdk-linux/usr/bin/objdump
   -- TODO: need to find the current object file associated with buffer
+  local makeprg = vim.api.nvim_get_option("makeprg")
   local obj_file = "/home/RATIONAL_LL/guennouv/test.o"
   local asm_parser = M.config.backends.asm_parser
   local objdump_opt_with_asm = asm_parser.objdump_options .. " -M " .. M.config.asm_syntax
@@ -134,7 +135,8 @@ M.godbolt = function(begin, _end, backend, reuse_3f, compiler)
       -- print(s)
       return display(vim.json.decode(s), begin, bufname, reuse_3f)
     end
-    local cmd = build_asm_parser_cmd()
+    local source_buf = vim.fn.bufnr()
+    local cmd = build_asm_parser_cmd(source_buf)
     -- print(cmd)
     fun.jobstart(cmd, {on_stdout = _15_, on_exit = curryed_display, stdout_buffered = true})
     -- TODO: execute asm-parser request

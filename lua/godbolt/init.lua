@@ -155,6 +155,17 @@ end
 M.setup = function(user_opts)
   require("godbolt.assembly").init()
   M.config = vim.tbl_deep_extend("force", M.config, user_opts or {})
+  -- TODO: clear highlights when we change the config
+  local highlights = ""
+  local color_idx = M.config.colorscheme
+  for i, color in pairs(M.config.colormap[color_idx]) do
+    highlights = highlights .. "highlight Godbolt" .. color_idx .. i .. " guibg=" .. color .. " | "
+  end
+  highlights = string.sub(highlights, 0, -4)
+  vim.cmd("augroup GodboltColors")
+  vim.cmd("autocmd!")
+  vim.cmd("autocmd ColorScheme * " .. highlights)
+  vim.cmd("augroup END")
 end
 
 return M

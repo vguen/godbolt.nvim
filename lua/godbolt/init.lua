@@ -152,32 +152,7 @@ end
 
 M.setup = function(user_opts)
   require("godbolt.assembly").init()
-  -- print("before [" .. table.concat(user_opts, ", ") .. "]")
-  -- print("before [" .. table.concat(M.config, ", ") .. "]")
-  -- print("============================================================")
-  -- TODO: can I use this instead ? how other fnl plugin do that ?
-  M.config = vim.tbl_extend("force", M.config, user_opts or {})
-  -- print("after  [" .. table.concat(user_opts, ", ") .. "]")
-  -- print("after  [" .. table.concat(M.config, ", ") .. "]")
-  -- print("============================================================")
-  -- local _4_
-  -- do
-  --   do end (require("godbolt.assembly")).init()
-  --   if cfg then
-  --     for k, v in pairs(cfg) do
-  --       M.config[k] = v
-  --       print("config[" .. k .. "] = " .. v)
-  --     end
-  --     _4_ = nil
-  --   else
-  --     _4_ = nil
-  --   end
-  -- end
-  -- if (function(_1_,_2_,_3_) return (_1_ == _2_) and (_2_ == _3_) end)(1,fun.has("nvim-0.6"),_4_) then
-  --   return api.nvim_err_writeln("neovim 0.6+ is required")
-  -- else
-  --   return nil
-  -- end
+  M.config = vim.tbl_deep_extend("force", M.config, user_opts or {})
 end
--- return {config = config, setup = setup, ["build-cmd"] = build_cmd, godbolt = godbolt}
+
 return M
